@@ -32,7 +32,6 @@ from langchain.schema import BaseMessage
 from llmtracer import module_filtering
 from llmtracer.frame_info import FrameInfo, get_frame_infos
 from llmtracer.object_converter import DynamicObjectConverter, ObjectConverter, convert_pydantic_model
-from llmtracer.tools.trace_viewer.app.endpoint_integration import trace_viewer_send_trace_builder
 from llmtracer.trace_schema import Trace, TraceNode, TraceNodeKind
 from llmtracer.utils.callable_wrapper import CallableWrapper
 from llmtracer.utils.weakrefs import WeakKeyIdMap

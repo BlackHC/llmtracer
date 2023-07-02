@@ -25,11 +25,12 @@ import pynecone as pc
 import pynecone.pc as cli
 from pydantic import Field
 from starlette import status
+
+from llmtracer import Trace, TraceNode, TraceNodeKind
+
 from .flame_graph import FlameGraphNode, flame_graph
 from .json_view import json_view
 from .pcconfig import config
-
-from llmtracer import Trace, TraceNode, TraceNodeKind
 
 docs_url = "https://pynecone.io/docs/getting-started/introduction"
 filename = f"{config.app_name}/{config.app_name}.py"

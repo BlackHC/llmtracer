@@ -19,14 +19,15 @@ from contextlib import contextmanager
 import wandb.sdk.wandb_run
 from wandb.sdk.data_types import trace_tree
 
-from llmtracer import (
+from llmtracer import (  # type: ignore
     Trace,
+    TraceBuilder,
+    TraceBuilderEventHandler,
     TraceNode,
     TraceNodeKind,
     build_trace,
     module_filtering,
-    TraceBuilderEventHandler,
-)  # type: ignore
+)
 
 
 def convert_event_kind_str(kind: TraceNodeKind):

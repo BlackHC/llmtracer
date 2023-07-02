@@ -100,4 +100,3 @@ LLMTracer is licensed under AGPL3.0. If you require a commercial license for any
 ## Credits
 
 This package was created using [PyneCone](https://pynecone.io/) with [Cookiecutter](https://github.com/audreyr/cookiecutter) and the [waynerv/cookiecutter-pypackage](https://github.com/waynerv/cookiecutter-pypackage) project template.
-

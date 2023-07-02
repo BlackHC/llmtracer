@@ -25,8 +25,8 @@ from svgwrite.elementfactory import factoryelements
 from svgwrite.etree import etree
 from svgwrite.mixins import Clipping, Presentation, Transform
 
-from llmtracer.trace_schema import Trace, TraceNode, TraceNodeKind
 from llmtracer.trace_builder import TraceBuilder, TraceBuilderEventHandler
+from llmtracer.trace_schema import Trace, TraceNode, TraceNodeKind
 
 
 # solarized colors as HTML hex

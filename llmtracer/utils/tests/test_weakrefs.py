@@ -18,9 +18,9 @@ import gc
 from dataclasses import dataclass
 
 import pytest
+
 from llmtracer.testing.collections.mutable_mapping import MutableMappingTests
 from llmtracer.testing.collections.mutable_set import MutableSetTests
-
 from llmtracer.utils import weakrefs
 
 

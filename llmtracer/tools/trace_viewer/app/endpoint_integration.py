@@ -19,9 +19,10 @@ import typing
 from dataclasses import dataclass
 
 import requests
-from . import pcconfig
 
 from llmtracer.utils.weakrefs import WeakKeyIdMap
+
+from . import pcconfig
 
 if typing.TYPE_CHECKING:
     from llmtracer import TraceBuilder

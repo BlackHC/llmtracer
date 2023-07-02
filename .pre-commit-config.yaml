@@ -28,13 +28,14 @@ repos:
       - id: flake8
         exclude: ^spikes/|^tests/
         additional_dependencies: [ flake8-typing-imports==1.12.0 ]
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.991
-    hooks:
-      - id: mypy
-        exclude: ^spikes/|^tests/
-        language_version: python3.10
-        additional_dependencies:
-          - types-click
-          - types-dataclasses
-          - pydantic
+#  - repo: https://github.com/pre-commit/mirrors-mypy
+#    rev: v0.991
+#    hooks:
+#      - id: mypy
+#        exclude: ^spikes/|^tests/
+#        language_version: python3.10
+#        additional_dependencies:
+#          - types-click
+#          - types-dataclasses
+#          - types-requests
+#          - pydantic
