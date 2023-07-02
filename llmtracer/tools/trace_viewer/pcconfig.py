@@ -13,6 +13,30 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import os
+import subprocess
+import sys
 
-# noinspection PyUnresolvedReferences
+import pynecone as pc
+import pynecone.pc as cli
+
+
 from app.pcconfig import *  # noqa: F401, F403
+
+
+def main():
+    """This is the entry point for the CLI."""
+    # Add the chatplayground directory to PYTHONPATH and change directories into it
+    os.environ["PYTHONPATH"] = os.path.abspath(os.path.dirname(__file__))
+    os.chdir(os.path.dirname(__file__))
+    print(os.getcwd())
+    subprocess.run(
+        [sys.executable, "-m", "pynecone.pc", "init"],
+        check=True,
+        cwd=os.getcwd()
+    )
+    cli.main(["run"] + sys.argv[1:])
+
+
+if __name__ == "__main__":
+    main()

@@ -1,4 +1,4 @@
-# Chat Playground
+# LLMTracer
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/blackhc?style=social)](https://twitter.com/intent/follow?screen_name=blackhc)
 [![pypi](https://img.shields.io/pypi/v/llmtracer.svg)](https://pypi.org/project/llmtracer/)
@@ -7,16 +7,19 @@
 [![codecov](https://codecov.io/gh/blackhc/llmtracer/branch/main/graphs/badge.svg)](https://codecov.io/github/blackhc/llmtracer)
 ![License](https://img.shields.io/github/license/blackhc/llmtracer)
 
-A simple local chat playground with power user features. All messages are stored as JSON files in a local directory, making it easy to sync them with a cloud service like Dropbox or Google Drive and access them from multiple devices while protecting your privacy.
+A simple (opinionated) library to trace calls to an LLM model (and more) with some batteries included:
+
+* FlameCharts!
+* JSON output;
+* interactive SVG output;
+* WandB integration;
+* PyneCone app to stream the output to a web browser at runtime and explore saved JSON files
 
 ## Motivation
 
-The ChatGPP web app is a great way to play with LLMs, but it has a few limitations:
+WandB only supports showing finished traces but I wanted to be able to view them in real-time (at finer granularity).
 
-- It's not possible to edit messages without deleting everything below.
-- It's hard to see what the explored alternatives are for a given message.
-- It's hard to see what the explored alternatives are for a given message thread.
-- It's not possible to change the model settings or the model type (GPT3.5/4) later on.
+Further, I want to make it easier to explore nested and complex calls and display properties of the calls.
 
 ## Installation
 
@@ -34,7 +37,7 @@ Or, to install a specific version of Node.js (this one worked for me on my MacBo
 conda install -c conda-forge nodejs=18.15.0=h26a3f6d_0
 ```
 
-### Chat Playground
+### Trace Viewer
 
 Once Node.js is installed, you can install Chat Playground using `pip` or `pipx` (if you have nodejs available in your base environment):
 

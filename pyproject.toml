@@ -75,7 +75,7 @@ doc = [
     ]
 
 [tool.poetry.scripts]
-llmtracer = 'llmtracer.pcconfig:main'
+llmtraceviewer = 'llmtracer.tools.trace_viewer.pcconfig:main'
 
 [tool.poetry.group.dev.dependencies]
 parse = {version = "^1.19.0", optional = true}
