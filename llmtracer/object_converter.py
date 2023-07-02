@@ -52,8 +52,8 @@ def simple_object_converter(obj: typing.Any, preferred_converter: ObjectConverte
 
 @dataclass
 class DynamicObjectConverter:
-    """
-    A class that converts objects to JSON dicts or strings.
+    """A class that converts objects to JSON dicts or strings.
+
     By default, only literals, tuples, lists, sets, dicts and dataclasses are converted.
     Other objects are {}.
 

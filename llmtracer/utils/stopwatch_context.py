@@ -20,12 +20,12 @@ from timeit import default_timer
 
 
 class StopwatchContext(AbstractContextManager):
-    """
-    A context the keeps track of the elapsed time. The elapsed time is available as the `elapsed_time` attribute.
+    """A context the keeps track of the elapsed time.
+
+    The elapsed time is available as the `elapsed_time` attribute.
     Nested contexts are not supported, but reusing the same context is.
 
     Example:
-
     ```
     with StopwatchContext() as stopwatch:
         ...

@@ -28,9 +28,6 @@ def test_wrapper_functor():
             return self.__wrapped__(*args, **kwargs)
 
     def my_functor(x: int) -> str:
-        """
-        my_functor(x: int) -> str
-        """
         return str(x)
 
     my_functor = MyFunctor(my_functor)

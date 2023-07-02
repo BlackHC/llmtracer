@@ -419,7 +419,9 @@ def convert_trace_node_kind_to_color(kind: TraceNodeKind):
 
 
 class ForeignObject(BaseElement, Transform, Presentation, Clipping):
-    """The **rect** element defines a rectangle which is axis-aligned with the current
+    """ForeignObject element.
+
+    The **rect** element defines a rectangle which is axis-aligned with the current
     user coordinate system. Rounded rectangles can be achieved by setting appropriate
     values for attributes **rx** and **ry**.
     """
@@ -428,7 +430,9 @@ class ForeignObject(BaseElement, Transform, Presentation, Clipping):
     inner_xml: etree.Element
 
     def __init__(self, inner_xml: etree.Element, insert=None, size=None, **extra):
-        """
+        """Initialize a new instance.
+
+        :param inner_xml: XML `ElementTree` of the inner content
         :param 2-tuple insert: insert point (**x**, **y**), left-upper point
         :param 2-tuple size: (**width**, **height**)
         :param extra: additional SVG attributes as keyword-arguments
