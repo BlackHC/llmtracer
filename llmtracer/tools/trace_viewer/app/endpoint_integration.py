@@ -40,10 +40,9 @@ _MIN_SEND_INTERVAL_MS = 500
 
 
 def trace_viewer_send_trace_builder(trace_builder: 'TraceBuilder', force: bool = False):
-    """
-    Send a trace to the backend.
+    """Send a trace to the backend.
 
-    :param trace: The trace to send.
+    :param trace_buider: The trace to send.
     :param force: If True, send the trace even if it has not been updated.
     """
     # Get the TraceUpdates object for this trace

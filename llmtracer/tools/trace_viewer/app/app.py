@@ -91,9 +91,7 @@ async def send_event(state: pc.State, event_handler: pc.event.EventHandler):
 
 
 class StreamedTracesSingleton:
-    """
-    A class that streams a trace to the client.
-    """
+    """A class that streams a trace to the client."""
 
     traces: dict[str, Trace] = {}
     _receivers: weakref.WeakValueDictionary[str, pc.State] = weakref.WeakValueDictionary()
@@ -240,7 +238,7 @@ class State(pc.State):
         """Handle the upload of a file.
 
         Args:
-            file: The uploaded file.
+            files: The uploaded file.
         """
         print(f"Received file upload {files}")
         assert len(files) == 1, "Expected exactly one file"
