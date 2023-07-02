@@ -95,9 +95,7 @@ Bug fixes, feature requests, and pull requests are welcome! If you have any ques
 
 ## License
 
-Chat Playground is licensed under AGPL3.0. If you require a commercial license for any part of the project, please contact the author.
-
-Hopefully, this project will inspire new UX paradigms for working with LLMs in the future.
+LLMTracer is licensed under AGPL3.0. If you require a commercial license for any part of the project, please contact the author.
 
 ## Credits
 
