@@ -9,11 +9,16 @@
 
 A simple (opinionated) library to trace calls to an LLM model (and more) with some batteries included:
 
-* FlameCharts!
+* simple `@trace_calls` decorator;
+* FlameCharts;
+* PyneCone app to stream the output to a web browser at runtime and explore saved JSON files
 * JSON output;
 * interactive SVG output;
 * WandB integration;
-* PyneCone app to stream the output to a web browser at runtime and explore saved JSON files
+
+<aside>
+The big difference to just using WandB is that the app supports live-streaming while WandB waits for the full calls to finish before making them available. Useful for the impatient among us.
+</aside>
 
 ## Motivation
 
@@ -37,32 +42,57 @@ Or, to install a specific version of Node.js (this one worked for me on my MacBo
 conda install -c conda-forge nodejs=18.15.0=h26a3f6d_0
 ```
 
-### Trace Viewer
+### LLMTracer & race Viewer
 
-Once Node.js is installed, you can install Chat Playground using `pip` or `pipx` (if you have nodejs available in your base environment):
-
-```
-pipx install llmtracer
-```
-
-### OpenAI Key :key:
-
-Ensure that your OpenAI key is set in an OPENAI_API_KEY environment variable. You then can run the playground with
+Once Node.js is installed, you can install LLMTracer using `pip`  (if you have nodejs available in your base environment):
 
 ```
-llmtracer
+pip install llmtracer
 ```
 
-## Features
+To run the trace viewer which can load both saved JSON traces and live-streamed traces, run:
 
-* Preview of possible alternative message threads as an exposee view.
-* Preview of possible alternatives at the message level.
-* Editing messages within a message thread without deleting everything below.
-* Forking message threads (similar to the ChatGPT web app).
-* Messages stored as JSON files in a local directory.
-* Easy sync with cloud services like Dropbox or Google Drive.
-* Real-time updates from the filesystem to the UI.
-* Atomic changes of the stored messages.
+```
+llmtraceviewer
+```
+
+### Usage:
+
+A simple example:
+
+```python
+from time import sleep
+
+import wandb
+
+from llmtracer import trace_calls, JsonFileWriter, TraceViewerIntegration, wandb_tracer
+from llmtracer.handlers.svg_writer import SvgFileWriter
+
+
+@trace_calls(capture_args=True, capture_return=True)
+def add_values(a: int, b: int):
+    # sleep 1 second
+    sleep(1)
+
+    return a + b
+
+
+@trace_calls(capture_args=True, capture_return=True)
+def fibonacci(n: int):
+    if n <= 1:
+        return 1
+    return add_values(fibonacci(n - 1), fibonacci(n - 2))
+
+
+wandb.init(project="llmtracer", name="simple_example")
+
+event_handlers = [JsonFileWriter("simple_example.json"), SvgFileWriter("simple_example.svg"), TraceViewerIntegration()]
+
+with wandb_tracer(
+    "main", stack_frame_context=0, event_handlers=event_handlers
+) as trace_builder:
+    print(fibonacci(10))
+```
 
 ## Screenshots
 
