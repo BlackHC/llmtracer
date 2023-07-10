@@ -72,5 +72,5 @@ def trace_viewer_send_trace_builder(trace_builder: 'TraceBuilder', force: bool =
     payload = trace.dict()
     try:
         requests.post(url, json=payload, timeout=0.05)
-    finally:
+    except requests.exceptions.RequestException:
         pass

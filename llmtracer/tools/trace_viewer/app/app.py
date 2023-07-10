@@ -226,8 +226,8 @@ class State(pc.State):
 
     def reset_graph(self):
         self._trace = None
-        self.update_flame_graph()
         self.trace_name = None
+        return self.update_flame_graph
 
     def load_default_flame_graph(self):
         self._trace = load_example_trace()
@@ -256,7 +256,13 @@ class State(pc.State):
         else:
             self._event_id_map = self._trace.build_event_id_map()
             self.flame_graph_data = convert_trace_to_flame_graph_data(self._trace)
-        self.current_node = []
+        # is there a current node?
+        if self.current_node:
+            event_id = self.current_node[-1].event_id
+            if event_id in self._event_id_map:
+                self._set_current_node(self, event_id)
+            else:
+                self.current_node = []
         self.mark_dirty()
 
     def on_injected_trace(self, trace_name: str):
@@ -288,38 +294,45 @@ class State(pc.State):
     def update_current_node(self, chart_data: dict):
         node_id = chart_data["source"].get("id", None)
         if node_id is None:
-            return
-
-        event_id = int(node_id)
-
-        trace_node = self._event_id_map[event_id]
-
-        properties = trace_node.properties.copy()
-        exception = properties.pop("exception", None)
-        arguments = properties.pop("arguments", None)
-        result = properties.pop("result", None)
-        if arguments:
-            assert isinstance(arguments, dict)
-            arguments = arguments.copy()
-            self_object = arguments.pop("self", None)
+            event_id = None
         else:
-            self_object = None
+            event_id = int(node_id)
+        self._set_current_node(self, event_id)
 
-        optional_properties = properties if properties else None
-        self.current_node = [
-            NodeInfo(
-                node_name=trace_node.name,
-                kind=trace_node.kind,
-                event_id=trace_node.event_id,
-                start_time_ms=trace_node.start_time_ms,
-                end_time_ms=trace_node.end_time_ms,
-                properties=optional_properties,
-                exception=exception,
-                self_object=self_object,
-                result=result,
-                arguments=arguments,
-            )
-        ]
+
+    def _set_current_node(self, event_id: int | None):
+        if event_id is None:
+            self.current_node = []
+        else:
+            trace_node = self._event_id_map[event_id]
+
+            properties = trace_node.properties.copy()
+            exception = properties.pop("exception", None)
+            arguments = properties.pop("arguments", None)
+            result = properties.pop("result", None)
+            if arguments:
+                assert isinstance(arguments, dict)
+                arguments = arguments.copy()
+                self_object = arguments.pop("self", None)
+            else:
+                self_object = None
+
+            optional_properties = properties if properties else None
+            self.current_node = [
+                NodeInfo(
+                    node_name=trace_node.name,
+                    kind=trace_node.kind,
+                    event_id=trace_node.event_id,
+                    start_time_ms=trace_node.start_time_ms,
+                    end_time_ms=trace_node.end_time_ms,
+                    properties=optional_properties,
+                    exception=exception,
+                    self_object=self_object,
+                    result=result,
+                    arguments=arguments,
+                )
+            ]
+        self.mark_dirty()
 
 
 def render_node_info(node_info: NodeInfo):
@@ -430,11 +443,14 @@ def index() -> pc.Component:
             pc.cond(
                 State.flame_graph_data,
                 pc.fragment(
-                    flame_graph(
-                        width=1024,
-                        height=100,
-                        data=State.flame_graph_data,
-                        on_change=lambda data: State.update_current_node(data),  # type: ignore
+                    pc.box(
+                        flame_graph(
+                            width=1024,
+                            height=256,
+                            data=State.flame_graph_data,
+                            on_change=lambda data: State.update_current_node(data),  # type: ignore
+                        ),
+                        border="1px orange solid",
                     ),
                     pc.foreach(
                         State.current_node,
