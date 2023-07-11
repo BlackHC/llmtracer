@@ -299,7 +299,6 @@ class State(pc.State):
             event_id = int(node_id)
         self._set_current_node(self, event_id)
 
-
     def _set_current_node(self, event_id: int | None):
         if event_id is None:
             self.current_node = []

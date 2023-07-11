@@ -11,18 +11,16 @@ A simple (opinionated) library to trace calls to an LLM model (and more) with so
 
 * simple `@trace_calls` decorator;
 * FlameCharts;
-* PyneCone app to stream the output to a web browser at runtime and explore saved JSON files
+* [Pynecone](https://pynecone.io/) web app (local) to stream the output to a web browser at runtime and/or explore saved JSON files
 * JSON output;
 * interactive SVG output;
-* WandB integration;
+* [WandB](https://wandb.ai/) integration (public example [here](https://wandb.ai/oatml-andreas-kirsch/llmtracer/runs/6mhws049));
 
-<aside>
-The big difference to just using WandB is that the app supports live-streaming while WandB waits for the full calls to finish before making them available. Useful for the impatient among us.
-</aside>
+The big difference to just using [WandB](https://wandb.ai/) is that the app supports live-streaming while WandB waits for the full calls to finish before making them available. Useful for the impatient among us.
 
 ## Motivation
 
-WandB only supports showing finished traces but I wanted to be able to view them in real-time (at finer granularity).
+[WandB](https://wandb.ai/) only supports showing finished traces but I wanted to be able to view them in real-time (at finer granularity).
 
 Further, I want to make it easier to explore nested and complex calls and display properties of the calls.
 
@@ -30,7 +28,7 @@ Further, I want to make it easier to explore nested and complex calls and displa
 
 ### Node.JS
 
-To install Chat Playground, first, make sure you have Node.js installed. You can use `conda` to install Node.js as follows:
+To be able to run the web app, first, make sure you have Node.js installed. You can use `conda` to install Node.js as follows:
 
 ```
 conda install -c conda-forge nodejs
@@ -96,28 +94,19 @@ with wandb_tracer(
 
 ## Screenshots
 
-![./docs/app_interface.png](./docs/app_interface.png)
+![Example](./llmtracer_examples.png)
 
-![./docs/message_alternatives.png](./docs/message_alternatives.png)
+https://github.com/BlackHC/llmtracer/assets/729312/c77faa7d-a831-496c-b791-8822577391e5
 
-![./docs/thread_exposee.png](./docs/thread_exposee.png)
+[![WandB Example](https://github.com/BlackHC/llmtracer/assets/729312/d4ed18af-c68c-4c86-aa1c-cd2c3c716ab2)](https://wandb.ai/oatml-andreas-kirsch/llmtracer/runs/6mhws049)
 
-## Code & Layout
+[SVG Example](./example/simple_example.svg)
 
-This project was written in ~25 hours using [Pynecone](https://pynecone.io/). The code is currently in one big Python file, which may benefit from refactoring into a package with multiple files. However, the code is mostly simple and it was quite productive to keep everything together.
-
-There are a few issues with the current code (in part due to Pynecone's early stage of development):
-
-- No tests currently.
-- Calling event functions in State classes requires passing self, even though it shouldn't: `self.state_event_function(self)`.
-- Issues with streaming events from the OpenAI request to the UI, requiring a hacky workaround for updates to propagate to the UI correctly.
-- Known Pynecone issues, as mentioned in the code.
-
-Despite these issues, the project came together very quickly with PyneCone and works quite well.
+[JSON Example](./example/simple_example.json)
 
 ## Documentation
 
-* License: GPL-3.0-only
+* License: LGPL-3.0
 * Source Code: <https://github.com/blackhc/llmtracer>
 * PyPI Package: <https://pypi.org/project/llmtracer/>
 * Official Documentation: <https://blackhc.github.io/llmtracer>
