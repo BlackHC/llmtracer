@@ -18,14 +18,19 @@ import subprocess
 import sys
 
 import pynecone.pc as cli
-from app.pcconfig import *  # noqa: F401, F403
+
+# Update the PYTHONPATH and change directories into the app directory
+# This is necessary for the import below to work.
+# Pynecone expects to be run from the root directory of the app.
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+os.chdir(os.path.dirname(__file__))
+
+from app.pcconfig import *  # noqa: E402, F401, F403
 
 
 def main():
     """This is the entry point for the CLI."""
     # Add the chatplayground directory to PYTHONPATH and change directories into it
-    os.environ["PYTHONPATH"] = os.path.abspath(os.path.dirname(__file__))
-    os.chdir(os.path.dirname(__file__))
     print(os.getcwd())
     subprocess.run([sys.executable, "-m", "pynecone.pc", "init"], check=True, cwd=os.getcwd())
     cli.main(["run"] + sys.argv[1:])
