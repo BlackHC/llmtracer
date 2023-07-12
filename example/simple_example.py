@@ -41,7 +41,11 @@ def fibonacci(n: int):
 
 wandb.init(project="llmtracer", name="simple_example")
 
-event_handlers = [JsonFileWriter("simple_example.json"), SvgFileWriter("simple_example.svg"), TraceViewerIntegration()]
+event_handlers = [
+    JsonFileWriter("simple_example.json"),
+    SvgFileWriter("simple_example.svg"),
+    TraceViewerIntegration(),
+]
 
 with wandb_tracer("main", stack_frame_context=0, event_handlers=event_handlers) as trace_builder:
     print(fibonacci(10))

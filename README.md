@@ -63,7 +63,12 @@ from time import sleep
 
 import wandb
 
-from llmtracer import trace_calls, JsonFileWriter, TraceViewerIntegration, wandb_tracer
+from llmtracer import (
+    JsonFileWriter,
+    TraceViewerIntegration,
+    trace_calls,
+    wandb_tracer,
+)
 from llmtracer.handlers.svg_writer import SvgFileWriter
 
 
@@ -84,7 +89,11 @@ def fibonacci(n: int):
 
 wandb.init(project="llmtracer", name="simple_example")
 
-event_handlers = [JsonFileWriter("simple_example.json"), SvgFileWriter("simple_example.svg"), TraceViewerIntegration()]
+event_handlers = [
+    JsonFileWriter("simple_example.json"),
+    SvgFileWriter("simple_example.svg"),
+    TraceViewerIntegration(),
+]
 
 with wandb_tracer(
     "main", stack_frame_context=0, event_handlers=event_handlers
