@@ -30,7 +30,6 @@ from app.pcconfig import *  # noqa: E402, F401, F403
 
 def main():
     """This is the entry point for the CLI."""
-    # Add the chatplayground directory to PYTHONPATH and change directories into it
     print(os.getcwd())
     subprocess.run([sys.executable, "-m", "pynecone.pc", "init"], check=True, cwd=os.getcwd())
     cli.main(["run"] + sys.argv[1:])
