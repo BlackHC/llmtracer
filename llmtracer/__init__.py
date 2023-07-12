@@ -27,3 +27,5 @@ from .trace_builder import (
 )
 from .trace_schema import Trace, TraceNode, TraceNodeKind
 from .wandb_integration import wandb_build_trace_trees, wandb_tracer
+
+__version__ = '0.1.0'
