@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "llmtracer"
-version = "1.0.0"
+version = "1.1.0"
 homepage = "https://github.com/blackhc/llmtracer"
 description = "LLMTracer: A tool to trace the execution of a program that uses LLMs and visualize the results."
 authors = ["Andreas Kirsch <blackhc@gmail.com>"]
