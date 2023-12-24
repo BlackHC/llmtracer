@@ -14,15 +14,15 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pynecone as pc
+import reflex as rx
 
-config = pc.Config(
+config = rx.Config(
     app_name="app",
     db_url="sqlite:///pynecone.db",
     port=3333,
     backend_port=8333,
     api_url="http://localhost:8333",
-    env=pc.Env.DEV,
+    env=rx.Env.DEV,
     frontend_packages=[
         "react-flame-graph",
         "react-object-view",

@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pynecone as pc
+import reflex as rx
 from pydantic import BaseModel, Field
 
 
@@ -28,17 +28,17 @@ class FlameGraphNode(BaseModel):
     id: str | None = None
 
 
-class FlameGraph(pc.Component):
+class FlameGraph(rx.Component):
     library = "react-flame-graph"
     tag = "FlameGraph"
 
-    data: pc.Var[dict]
-    height: pc.Var[int]
-    width: pc.Var[int]
+    data: rx.Var[dict]
+    height: rx.Var[int]
+    width: rx.Var[int]
 
     @classmethod
-    def get_controlled_triggers(cls) -> dict[str, pc.Var]:
-        return {"on_change": pc.EVENT_ARG}
+    def get_controlled_triggers(cls) -> dict[str, rx.Var]:
+        return {"on_change": rx.EVENT_ARG}
 
 
 flame_graph = FlameGraph.create

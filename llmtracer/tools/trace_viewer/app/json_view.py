@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pynecone as pc
+import reflex as rx
 
 """
 https://monojack.github.io/react-object-view/
@@ -43,14 +43,14 @@ function App() {
 """
 
 
-class JsonView(pc.Component):
+class JsonView(rx.Component):
     if False:
         library = "react-object-view"
         tag = "ObjectView"
     elif True:
         library = "react-json-view-lite"
         tag = "JsonView"
-    data: pc.Var[object]
+    data: rx.Var[object]
     # options: pc.Var[dict] = {}
     # styles: pc.Var[dict] = {}
     # palette: pc.Var[dict] = {}

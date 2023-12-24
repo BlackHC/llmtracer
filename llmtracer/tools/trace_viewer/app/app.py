@@ -21,8 +21,8 @@ import typing
 import weakref
 from enum import Enum
 
-import pynecone as pc
-import pynecone.pc as cli
+import reflex as rx
+import reflex.pc as cli
 from pydantic import Field
 from starlette import status
 
@@ -57,7 +57,7 @@ class SolarizedColors(str, Enum):
     green = "#859900"
 
 
-class NodeInfo(pc.Base):
+class NodeInfo(rx.Base):
     node_name: str
     kind: TraceNodeKind
     event_id: int
@@ -71,7 +71,7 @@ class NodeInfo(pc.Base):
     arguments: object | None
 
 
-class Wrapper(pc.Base):
+class Wrapper(rx.Base):
     inner: object = None
 
     def __init__(self, inner):
@@ -82,24 +82,24 @@ def load_example_trace():
     return Trace.parse_file('optimization_unit_trace_example.json')
 
 
-async def send_event(state: pc.State, event_handler: pc.event.EventHandler):
+async def send_event(state: rx.State, event_handler: rx.event.EventHandler):
     """Send an event to the server (from a different client thread)."""
-    events = pc.event.fix_events([event_handler], state.get_token())
-    state_update = pc.state.StateUpdate(delta={}, events=events)
+    events = rx.event.fix_events([event_handler], state.get_token())
+    state_update = rx.state.StateUpdate(delta={}, events=events)
     state_update_json = state_update.json()
 
-    await app.sio.emit(str(pc.constants.SocketEvent.EVENT), state_update_json, to=state.get_sid(), namespace="/event")
+    await app.sio.emit(str(rx.constants.SocketEvent.EVENT), state_update_json, to=state.get_sid(), namespace="/event")
 
 
 class StreamedTracesSingleton:
     """A class that streams a trace to the client."""
 
     traces: dict[str, Trace] = {}
-    _receivers: weakref.WeakValueDictionary[str, pc.State] = weakref.WeakValueDictionary()
+    _receivers: weakref.WeakValueDictionary[str, rx.State] = weakref.WeakValueDictionary()
 
     lock: threading.Lock = threading.Lock()
 
-    def send_update_event(self, origin: pc.State | None, trace_name: str):
+    def send_update_event(self, origin: rx.State | None, trace_name: str):
         """Send an update event to all registered states (except the one that triggered the update)."""
         if origin is not None:
             origin = origin.parent_state if origin.parent_state else origin
@@ -109,7 +109,7 @@ class StreamedTracesSingleton:
             for state in self._receivers.values():
                 if origin is None or state.get_sid() != origin.get_sid():
                     # noinspection PyNoneFunctionAssignment,PyArgumentList
-                    event_handler: pc.event.EventHandler = State.on_injected_trace(trace_name)  # type: ignore
+                    event_handler: rx.event.EventHandler = State.on_injected_trace(trace_name)  # type: ignore
                     print(f"Sending update event for trace {trace_name} to {state.get_sid()}")
                     await send_event(state, event_handler)
 
@@ -123,12 +123,12 @@ class StreamedTracesSingleton:
             self.traces[trace_name] = trace
             self.send_update_event(None, trace_name)
 
-    def register_state(self, state: pc.State):
+    def register_state(self, state: rx.State):
         """Register a state to receive update events.
 
         We use this to keep track of active clients using a weakref value dictionary.
         """
-        main_state: pc.State = state.parent_state if state.parent_state else state
+        main_state: rx.State = state.parent_state if state.parent_state else state
         # TODO: check that we have exactly one state per session id?
         if main_state.get_sid() not in self._receivers:
             self._receivers[main_state.get_sid()] = main_state
@@ -193,7 +193,7 @@ def convert_trace_to_flame_graph_data(trace: Trace) -> dict:
     return converted_node
 
 
-class State(pc.State):
+class State(rx.State):
     """The app state."""
 
     __slots__ = [
@@ -235,7 +235,7 @@ class State(pc.State):
         self.mark_dirty()
         return self.update_flame_graph
 
-    async def handle_trace_upload(self, files: list[pc.UploadFile]):
+    async def handle_trace_upload(self, files: list[rx.UploadFile]):
         """Handle the upload of a file.
 
         Args:
@@ -338,62 +338,62 @@ def render_node_info(node_info: NodeInfo):
     """Renders node_info as a simple table."""
     header_style = dict(width="20%", text_align="right", vertical_align="top")
 
-    return pc.table_container(
-        pc.table(
-            pc.tbody(
-                pc.tr(
-                    pc.th("Name", style=header_style),
-                    pc.td(node_info.node_name, colspan=0),
+    return rx.table_container(
+        rx.table(
+            rx.tbody(
+                rx.tr(
+                    rx.th("Name", style=header_style),
+                    rx.td(node_info.node_name, colspan=0),
                 ),
-                pc.tr(
-                    pc.th("", style=header_style),
-                    pc.td(
-                        pc.stat_group(
-                            pc.stat(
-                                pc.stat_number(node_info.kind),
-                                pc.stat_help_text("KIND"),
+                rx.tr(
+                    rx.th("", style=header_style),
+                    rx.td(
+                        rx.stat_group(
+                            rx.stat(
+                                rx.stat_number(node_info.kind),
+                                rx.stat_help_text("KIND"),
                             ),
-                            pc.stat(
-                                pc.stat_number((node_info.end_time_ms - node_info.start_time_ms) / 1000),
-                                pc.stat_help_text("DURATION (S)"),
+                            rx.stat(
+                                rx.stat_number((node_info.end_time_ms - node_info.start_time_ms) / 1000),
+                                rx.stat_help_text("DURATION (S)"),
                             ),
                             width="100%",
                         )
                     ),
                 ),
-                pc.cond(
+                rx.cond(
                     node_info.exception,
-                    pc.tr(
-                        pc.th("Exception", style=header_style),
-                        pc.td(json_view(data=node_info.exception), colspan=0),
+                    rx.tr(
+                        rx.th("Exception", style=header_style),
+                        rx.td(json_view(data=node_info.exception), colspan=0),
                     ),
                 ),
-                pc.cond(
+                rx.cond(
                     node_info.result,
-                    pc.tr(
-                        pc.th("Result", style=header_style),
-                        pc.td(json_view(data=node_info.result), colspan=0),
+                    rx.tr(
+                        rx.th("Result", style=header_style),
+                        rx.td(json_view(data=node_info.result), colspan=0),
                     ),
                 ),
-                pc.cond(
+                rx.cond(
                     node_info.arguments,
-                    pc.tr(
-                        pc.th("Arguments", style=header_style),
-                        pc.td(json_view(data=node_info.arguments), colspan=0),
+                    rx.tr(
+                        rx.th("Arguments", style=header_style),
+                        rx.td(json_view(data=node_info.arguments), colspan=0),
                     ),
                 ),
-                pc.cond(
+                rx.cond(
                     node_info.self_object,
-                    pc.tr(
-                        pc.th("Self", style=header_style),
-                        pc.td(json_view(data=node_info.self_object), colspan=0),
+                    rx.tr(
+                        rx.th("Self", style=header_style),
+                        rx.td(json_view(data=node_info.self_object), colspan=0),
                     ),
                 ),
-                pc.cond(
+                rx.cond(
                     node_info.properties,
-                    pc.tr(
-                        pc.th("Properties", style=header_style),
-                        pc.td(json_view(data=node_info.properties), colspan=0),
+                    rx.tr(
+                        rx.th("Properties", style=header_style),
+                        rx.td(json_view(data=node_info.properties), colspan=0),
                     ),
                 ),
             ),
@@ -404,45 +404,45 @@ def render_node_info(node_info: NodeInfo):
 
 
 @typing.no_type_check
-def index() -> pc.Component:
-    return pc.center(
-        pc.vstack(
-            pc.span(
-                pc.heading("Trace Viewer", level=1, style=dict(display="inline-block", margin_right="16px")),
-                pc.popover(
-                    pc.popover_trigger(pc.button(pc.icon(tag="hamburger"), style=dict(vertical_align="top"))),
-                    pc.popover_content(
-                        pc.popover_header("Choose Trace Source"),
-                        pc.popover_body(
-                            pc.button("Load Example", on_click=State.load_default_flame_graph),
-                            pc.divider(margin="0.5em"),
-                            pc.upload(
-                                pc.text("Drag and drop files here or click to select trace json file."),
+def index() -> rx.Component:
+    return rx.center(
+        rx.vstack(
+            rx.span(
+                rx.heading("Trace Viewer", level=1, style=dict(display="inline-block", margin_right="16px")),
+                rx.popover(
+                    rx.popover_trigger(rx.button(rx.icon(tag="hamburger"), style=dict(vertical_align="top"))),
+                    rx.popover_content(
+                        rx.popover_header("Choose Trace Source"),
+                        rx.popover_body(
+                            rx.button("Load Example", on_click=State.load_default_flame_graph),
+                            rx.divider(margin="0.5em"),
+                            rx.upload(
+                                rx.text("Drag and drop files here or click to select trace json file."),
                                 border="1px dotted",
                                 padding="2em",
                                 margin="0.25em",
                             ),
-                            pc.button("Load", on_click=lambda: State.handle_trace_upload(pc.upload_files())),
-                            pc.divider(margin="0.5em"),
-                            pc.select(
+                            rx.button("Load", on_click=lambda: State.handle_trace_upload(rx.upload_files())),
+                            rx.divider(margin="0.5em"),
+                            rx.select(
                                 State.injected_trace_names,
                                 is_disabled=State.injected_trace_names.length() == 0,
                                 value=State.trace_name,
                                 placeholder="Select an available trace",
                                 on_change=State.handle_trace_selection,
                             ),
-                            pc.divider(margin="0.5em"),
-                            pc.button("Reset", on_click=State.reset_graph),
+                            rx.divider(margin="0.5em"),
+                            rx.button("Reset", on_click=State.reset_graph),
                         ),
                         # pc.popover_footer(pc.text("Footer text.")),
-                        pc.popover_close_button(),
+                        rx.popover_close_button(),
                     ),
                 ),
             ),
-            pc.cond(
+            rx.cond(
                 State.flame_graph_data,
-                pc.fragment(
-                    pc.box(
+                rx.fragment(
+                    rx.box(
                         flame_graph(
                             width=1024,
                             height=256,
@@ -451,7 +451,7 @@ def index() -> pc.Component:
                         ),
                         border="1px orange solid",
                     ),
-                    pc.foreach(
+                    rx.foreach(
                         State.current_node,
                         render_node_info,
                     ),
@@ -472,7 +472,7 @@ meta = [
 ]
 
 # Add state and page to the app.
-app = pc.App(
+app = rx.App(
     state=State,
     stylesheets=[
         'react-json-view-lite.css',
