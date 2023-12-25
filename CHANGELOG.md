@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2023-12-25
+
+* relax more dependencies
+
 ## [1.1.0] - 2023-12-25
 
 * update langchain and change pynecone imports to reflex
