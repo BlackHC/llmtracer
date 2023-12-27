@@ -284,7 +284,7 @@ class TraceBuilder:
 
 
 @dataclass
-class CallTracer(typing.Callable[P, T], typing.Generic[P, T], CallableWrapper):  # type: ignore
+class CallTracer(CallableWrapper, typing.Callable[P, T], typing.Generic[P, T]):  # type: ignore
     __signature__: inspect.Signature
     __wrapped__: typing.Callable[P, T]
     __wrapped_name__: str

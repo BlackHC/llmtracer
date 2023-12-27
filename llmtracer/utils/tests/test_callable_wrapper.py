@@ -50,3 +50,32 @@ def test_wrapper_functor():
 
     # assert that the dir of the wrapper contains all attributes of the wrapped object (superset)
     assert set(dir(my_functor)) >= set(dir(my_functor.__wrapped__))
+
+
+try:
+    import pydantic.main
+    from pydantic import BaseModel
+
+    def test_callable_wrapper_within_pydantic():
+        # Pydantic seems to be doing weird things
+        @dataclass
+        class MyFunctor(CallableWrapper):
+            __wrapped__: object
+
+            def __call__(self, *args, **kwargs):
+                return self.__wrapped__(*args, **kwargs)
+
+        class PydanticModel(BaseModel):
+            @MyFunctor
+            def test(self, a):
+                return a
+
+        model = PydanticModel()
+        assert model
+
+        assert CallableWrapper in pydantic.main.UNTOUCHED_TYPES
+
+        assert model.test("foo") == "foo"
+
+except ImportError:
+    pass

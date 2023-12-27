@@ -39,6 +39,8 @@ class CallableWrapper:
         return types.MethodType(self, instance)
 
     def __getattr__(self, item):
+        if item == "__wrapped__":
+            raise AttributeError(name=item, obj=self)
         return getattr(self.__wrapped__, item)
 
     def __call__(self, *args, **kwargs):
@@ -49,3 +51,12 @@ class CallableWrapper:
         self_dir = list(super().__dir__())
         wrapped_dir = list(dir(self.__wrapped__))
         return list(set(self_dir + wrapped_dir))
+
+
+# Fix Pydantic (if it is installed) by adding CallableWrapper to UNTOUCHED_TYPES
+try:
+    import pydantic
+
+    pydantic.main.UNTOUCHED_TYPES += (CallableWrapper,)
+except ImportError:
+    pass

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2023-12-25
+
+* fix for CallableWrapper and Pydantic < 2
+
 ## [1.2.0] - 2023-12-25
 
 * relax more dependencies
