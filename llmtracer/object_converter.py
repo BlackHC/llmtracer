@@ -146,5 +146,4 @@ def convert_pydantic_model(obj: pydantic.BaseModel, converter: ObjectConverter |
     if converter is None:
         converter = convert_pydantic_model
 
-    # Iterate over the fields of the model
-    return {f.name: converter(getattr(obj, f.name)) for f in obj.__fields__.values()}  # type: ignore
+    return {key: converter(value, converter) for key, value in obj.model_dump(mode='python').items()}

@@ -14,10 +14,9 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
-import subprocess
 import sys
 
-import pynecone.pc as cli
+import reflex.reflex
 
 # Update the PYTHONPATH and change directories into the app directory
 # This is necessary for the import below to work.
@@ -25,14 +24,11 @@ import pynecone.pc as cli
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 os.chdir(os.path.dirname(__file__))
 
-from app.pcconfig import *  # noqa: E402, F401, F403
-
 
 def main():
     """This is the entry point for the CLI."""
     print(os.getcwd())
-    subprocess.run([sys.executable, "-m", "pynecone.pc", "init"], check=True, cwd=os.getcwd())
-    cli.main(["run"] + sys.argv[1:])
+    reflex.reflex._run()
 
 
 if __name__ == "__main__":

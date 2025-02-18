@@ -13,30 +13,13 @@
 #
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import os
+import sys
 
-import reflex as rx
-from pydantic import BaseModel, Field
+# Update the PYTHONPATH and change directories into the app directory
+# This is necessary for the import below to work.
+# Pynecone expects to be run from the root directory of the app.
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+os.chdir(os.path.dirname(__file__))
 
-
-class FlameGraphNode(BaseModel):
-    name: str
-    value: int | float
-    children: list["FlameGraphNode"]
-    color: str | None = None
-    backgroundColor: str | None = Field(None, alias="background_color")
-    tooltip: str | None = None
-    id: str | None = None
-
-
-class FlameGraph(rx.Component):
-    library = "react-flame-graph"
-    tag = "FlameGraph"
-
-    data: rx.Var[dict]
-    height: rx.Var[int]
-    width: rx.Var[int]
-
-    on_change: rx.EventHandler[lambda chart_data: [chart_data]]
-
-
-flame_graph = FlameGraph.create
+from app.pcconfig import *  # noqa: E402, F401, F403

@@ -1,2 +1,6 @@
-pynecone.db
+*.db
+*.py[cod]
 .web
+__pycache__/
+assets/external/
+pynecone.db

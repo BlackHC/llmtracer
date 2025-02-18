@@ -23,9 +23,4 @@ config = rx.Config(
     backend_port=8333,
     api_url="http://localhost:8333",
     env=rx.Env.DEV,
-    frontend_packages=[
-        "react-flame-graph",
-        "react-object-view",
-        "react-json-view-lite",
-    ],
 )

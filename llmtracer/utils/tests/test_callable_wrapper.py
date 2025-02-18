@@ -53,7 +53,6 @@ def test_wrapper_functor():
 
 
 try:
-    import pydantic.main
     from pydantic import BaseModel
 
     def test_callable_wrapper_within_pydantic():
@@ -72,8 +71,6 @@ try:
 
         model = PydanticModel()
         assert model
-
-        assert CallableWrapper in pydantic.main.UNTOUCHED_TYPES
 
         assert model.test("foo") == "foo"
 

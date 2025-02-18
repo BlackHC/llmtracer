@@ -57,6 +57,8 @@ class CallableWrapper:
 try:
     import pydantic
 
-    pydantic.main.UNTOUCHED_TYPES += (CallableWrapper,)
+    pydantic.BaseModel.model_config["ignored_types"] = pydantic.BaseModel.model_config.get("ignored_types", ()) + (
+        CallableWrapper,
+    )
 except ImportError:
     pass

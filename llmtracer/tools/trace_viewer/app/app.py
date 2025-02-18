@@ -22,8 +22,7 @@ import weakref
 from enum import Enum
 
 import reflex as rx
-import reflex.pc as cli
-from pydantic import Field
+import reflex_chakra as rc
 from starlette import status
 
 from llmtracer import Trace, TraceNode, TraceNodeKind
@@ -79,7 +78,7 @@ class Wrapper(rx.Base):
 
 
 def load_example_trace():
-    return Trace.parse_file('optimization_unit_trace_example.json')
+    return Trace.parse_file("optimization_unit_trace_example.json")
 
 
 async def send_event(state: rx.State, event_handler: rx.event.EventHandler):
@@ -88,7 +87,12 @@ async def send_event(state: rx.State, event_handler: rx.event.EventHandler):
     state_update = rx.state.StateUpdate(delta={}, events=events)
     state_update_json = state_update.json()
 
-    await app.sio.emit(str(rx.constants.SocketEvent.EVENT), state_update_json, to=state.get_sid(), namespace="/event")
+    await app.sio.emit(
+        str(rx.constants.SocketEvent.EVENT),
+        state_update_json,
+        to=state.get_sid(),
+        namespace="/event",
+    )
 
 
 class StreamedTracesSingleton:
@@ -196,27 +200,27 @@ def convert_trace_to_flame_graph_data(trace: Trace) -> dict:
 class State(rx.State):
     """The app state."""
 
-    __slots__ = [
-        '__weakref__',
-        'flame_graph_data',
-        'current_node',
-        'trace_name',
-        'injected_trace_names',
-    ]
+    # __slots__ = [
+    #     '__weakref__',
+    #     'flame_graph_data',
+    #     'current_node',
+    #     'trace_name',
+    #     'injected_trace_names',
+    # ]
 
-    flame_graph_data: dict = FlameGraphNode(name="", value=1, background_color="#00000000", children=[]).dict()
-    current_node: list[NodeInfo] = Field(default_factory=list)
-    trace_name: str | None = Field(default=None)
+    flame_graph_data: dict = FlameGraphNode(name="", value=1, background_color="#00000000", children=[]).model_dump()
+    current_node: list[NodeInfo] = []
+    trace_name: str | None = ""
 
-    _trace: Trace | None
-    _event_id_map: dict[int, TraceNode]
+    _trace: Trace | None = None
+    _event_id_map: dict[int, TraceNode] = {}
 
-    injected_trace_names: list[str] = Field(default_factory=list)
+    injected_trace_names: list[str] = []
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._trace = None
-        self._event_id_map = {}
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     self._trace = None
+    #     self._event_id_map = {}
 
     def register_state(self):
         """Register this state to receive updates."""
@@ -227,13 +231,13 @@ class State(rx.State):
     def reset_graph(self):
         self._trace = None
         self.trace_name = None
-        return self.update_flame_graph
+        self.update_flame_graph()
 
     def load_default_flame_graph(self):
+        print("Loading default flame graph")
         self._trace = load_example_trace()
         self.trace_name = None
-        self.mark_dirty()
-        return self.update_flame_graph
+        self.update_flame_graph()
 
     async def handle_trace_upload(self, files: list[rx.UploadFile]):
         """Handle the upload of a file.
@@ -247,7 +251,7 @@ class State(rx.State):
         upload_data = await file.read()
         self._trace = Trace.parse_raw(upload_data)  # type: ignore
         self.trace_name = None
-        return self.update_flame_graph
+        self.update_flame_graph()
 
     def update_flame_graph(self):
         if self._trace is None:
@@ -260,10 +264,9 @@ class State(rx.State):
         if self.current_node:
             event_id = self.current_node[-1].event_id
             if event_id in self._event_id_map:
-                self._set_current_node(self, event_id)
+                self._set_current_node(event_id)
             else:
                 self.current_node = []
-        self.mark_dirty()
 
     def on_injected_trace(self, trace_name: str):
         """Handle an injected trace event."""
@@ -277,9 +280,8 @@ class State(rx.State):
 
         if self.trace_name == trace_name:
             self._trace = streamed_traced_singleton.traces.get(trace_name, None)  # type: ignore
-            self.mark_dirty()
 
-            return self.update_flame_graph
+            self.update_flame_graph()
 
     def handle_trace_selection(self, trace_name: str):
         """Handle the selection of a trace."""
@@ -287,9 +289,8 @@ class State(rx.State):
         self._trace = streamed_traced_singleton.traces.get(trace_name, None)  # type: ignore
         if self._trace is None:
             print(f"Could not find trace {trace_name}")
-        self.mark_dirty()
 
-        return self.update_flame_graph
+        self.update_flame_graph()
 
     def update_current_node(self, chart_data: dict):
         node_id = chart_data["source"].get("id", None)
@@ -297,7 +298,7 @@ class State(rx.State):
             event_id = None
         else:
             event_id = int(node_id)
-        self._set_current_node(self, event_id)
+        self._set_current_node(event_id)
 
     def _set_current_node(self, event_id: int | None):
         if event_id is None:
@@ -331,31 +332,30 @@ class State(rx.State):
                     arguments=arguments,
                 )
             ]
-        self.mark_dirty()
 
 
 def render_node_info(node_info: NodeInfo):
     """Renders node_info as a simple table."""
     header_style = dict(width="20%", text_align="right", vertical_align="top")
 
-    return rx.table_container(
-        rx.table(
-            rx.tbody(
-                rx.tr(
-                    rx.th("Name", style=header_style),
-                    rx.td(node_info.node_name, colspan=0),
+    return rc.table_container(
+        rc.table(
+            rc.tbody(
+                rc.tr(
+                    rc.th("Name", style=header_style),
+                    rc.td(node_info.node_name, colspan=0),
                 ),
-                rx.tr(
-                    rx.th("", style=header_style),
-                    rx.td(
-                        rx.stat_group(
-                            rx.stat(
-                                rx.stat_number(node_info.kind),
-                                rx.stat_help_text("KIND"),
+                rc.tr(
+                    rc.th("", style=header_style),
+                    rc.td(
+                        rc.stat_group(
+                            rc.stat(
+                                rc.stat_number(node_info.kind),
+                                rc.stat_help_text("KIND"),
                             ),
-                            rx.stat(
-                                rx.stat_number((node_info.end_time_ms - node_info.start_time_ms) / 1000),
-                                rx.stat_help_text("DURATION (S)"),
+                            rc.stat(
+                                rc.stat_number((node_info.end_time_ms - node_info.start_time_ms) / 1000),
+                                rc.stat_help_text("DURATION (S)"),
                             ),
                             width="100%",
                         )
@@ -363,37 +363,67 @@ def render_node_info(node_info: NodeInfo):
                 ),
                 rx.cond(
                     node_info.exception,
-                    rx.tr(
-                        rx.th("Exception", style=header_style),
-                        rx.td(json_view(data=node_info.exception), colspan=0),
+                    rc.tr(
+                        rc.th("Exception", style=header_style),
+                        rc.td(
+                            json_view(
+                                data=node_info.exception,
+                                style=dict(background_color="#000000"),
+                            ),
+                            colspan=0,
+                        ),
                     ),
                 ),
                 rx.cond(
                     node_info.result,
-                    rx.tr(
-                        rx.th("Result", style=header_style),
-                        rx.td(json_view(data=node_info.result), colspan=0),
+                    rc.tr(
+                        rc.th("Result", style=header_style),
+                        rc.td(
+                            json_view(
+                                data=node_info.result,
+                                style=dict(background_color="#000000"),
+                            ),
+                            colspan=0,
+                        ),
                     ),
                 ),
                 rx.cond(
                     node_info.arguments,
-                    rx.tr(
-                        rx.th("Arguments", style=header_style),
-                        rx.td(json_view(data=node_info.arguments), colspan=0),
+                    rc.tr(
+                        rc.th("Arguments", style=header_style),
+                        rc.td(
+                            json_view(
+                                data=node_info.arguments,
+                                style=dict(background_color="#000000"),
+                            ),
+                            colspan=0,
+                        ),
                     ),
                 ),
                 rx.cond(
                     node_info.self_object,
-                    rx.tr(
-                        rx.th("Self", style=header_style),
-                        rx.td(json_view(data=node_info.self_object), colspan=0),
+                    rc.tr(
+                        rc.th("Self", style=header_style),
+                        rc.td(
+                            json_view(
+                                data=node_info.self_object,
+                                style=dict(background_color="#000000"),
+                            ),
+                            colspan=0,
+                        ),
                     ),
                 ),
                 rx.cond(
                     node_info.properties,
-                    rx.tr(
-                        rx.th("Properties", style=header_style),
-                        rx.td(json_view(data=node_info.properties), colspan=0),
+                    rc.tr(
+                        rc.th("Properties", style=header_style),
+                        rc.td(
+                            json_view(
+                                data=node_info.properties,
+                                style=dict(background_color="#000000"),
+                            ),
+                            colspan=0,
+                        ),
                     ),
                 ),
             ),
@@ -405,37 +435,45 @@ def render_node_info(node_info: NodeInfo):
 
 @typing.no_type_check
 def index() -> rx.Component:
-    return rx.center(
-        rx.vstack(
-            rx.span(
-                rx.heading("Trace Viewer", level=1, style=dict(display="inline-block", margin_right="16px")),
-                rx.popover(
-                    rx.popover_trigger(rx.button(rx.icon(tag="hamburger"), style=dict(vertical_align="top"))),
-                    rx.popover_content(
-                        rx.popover_header("Choose Trace Source"),
-                        rx.popover_body(
-                            rx.button("Load Example", on_click=State.load_default_flame_graph),
-                            rx.divider(margin="0.5em"),
+    return rc.center(
+        rc.vstack(
+            rc.span(
+                rc.heading(
+                    "Trace Viewer",
+                    level=1,
+                    style=dict(display="inline-block", margin_right="16px"),
+                ),
+                rx.popover.root(
+                    rx.popover.trigger(rc.button(rc.icon(tag="hamburger"), style=dict(vertical_align="top"))),
+                    rx.popover.content(
+                        rx.flex(
+                            rc.heading("Choose Trace Source"),
+                            rc.button("Load Example", on_click=State.load_default_flame_graph),
+                            rc.divider(margin="0.5em"),
                             rx.upload(
-                                rx.text("Drag and drop files here or click to select trace json file."),
-                                border="1px dotted",
-                                padding="2em",
-                                margin="0.25em",
+                                rc.text("Drag and drop files here or click to select trace json file."),
+                                rx.vstack(rx.foreach(rx.selected_files("trace-upload"), rx.text)),
+                                border="1px dotted rgb(107,99,246)",
+                                padding="1em",
+                                id="trace-upload",
                             ),
-                            rx.button("Load", on_click=lambda: State.handle_trace_upload(rx.upload_files())),
-                            rx.divider(margin="0.5em"),
-                            rx.select(
+                            rc.button(
+                                "Load",
+                                on_click=lambda: State.handle_trace_upload(rx.upload_files(upload_id="trace-upload")),
+                            ),
+                            rc.divider(margin="0.5em"),
+                            rc.select(
                                 State.injected_trace_names,
                                 is_disabled=State.injected_trace_names.length() == 0,
                                 value=State.trace_name,
                                 placeholder="Select an available trace",
                                 on_change=State.handle_trace_selection,
                             ),
-                            rx.divider(margin="0.5em"),
-                            rx.button("Reset", on_click=State.reset_graph),
-                        ),
-                        # pc.popover_footer(pc.text("Footer text.")),
-                        rx.popover_close_button(),
+                            rc.divider(margin="0.5em"),
+                            rc.button("Reset", on_click=State.reset_graph),
+                            direction="column",
+                            spacing="3",
+                        )
                     ),
                 ),
             ),
@@ -457,6 +495,24 @@ def index() -> rx.Component:
                     ),
                 ),
             ),
+            # rx.cond(
+            #     State.flame_graph_data,
+            #     rx.fragment(
+            #         rx.box(
+            #             flame_graph(
+            #                 width=1024,
+            #                 height=256,
+            #                 data=State.flame_graph_data,
+            #                 on_change=lambda data: State.update_current_node(data),  # type: ignore
+            #             ),
+            #             border="1px orange solid",
+            #         ),
+            #         rx.foreach(
+            #             State.current_node,
+            #             render_node_info,
+            #         ),
+            #     ),
+            # ),
         ),
         padding_top="64px",
         padding_bottom="64px",
@@ -473,14 +529,16 @@ meta = [
 
 # Add state and page to the app.
 app = rx.App(
-    state=State,
     stylesheets=[
-        'react-json-view-lite.css',
+        "react-json-view-lite.css",
     ],
+    theme=rx.theme(
+        appearance="light",
+    ),
 )
 app.add_page(
     index,
-    on_load=State.register_state,
+    # on_load=State.register_state,
     meta=meta,
     title="Trace Viewer",
     description="View traces (both offline and streamed).",
@@ -490,9 +548,3 @@ app.add_page(
 @app.api.post("/trace/{trace_name}", status_code=status.HTTP_204_NO_CONTENT)
 async def inject_trace(trace_name: str, trace: Trace):
     streamed_traced_singleton.update_trace(trace_name, trace)
-
-
-app.compile()
-
-if __name__ == "__main__":
-    cli.main()
